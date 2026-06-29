@@ -1,0 +1,216 @@
+{
+  "name": "Automated Daily News Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0cf01ac6-9005-46be-a642-e00b91be9467",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything?q=bitcoin&apiKey=a7322b688b6446e2b1f8a840c7c7fb27\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "de20ce13-7c1f-45c7-a4bb-b268478e51c6",
+      "name": "Fetch Top News"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "articles",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4a327011-d595-4957-b7ff-5de5c1f01eaa",
+      "name": "Split Articles"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "49bce515-c834-4e99-bad8-2d25a16f70c1",
+      "name": "Select Top 10 Headlines"
+    },
+    {
+      "parameters": {
+        "jsCode": "let allArticles = \" \";\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n\n  let article = `<h1>${item.json.title}</h1><br><p>${item.json.content}</p><br>`;\n  allArticles += article;\n  \n}\n\nreturn [\n  {\n    json:{\n      allArticles : allArticles\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "dcddb770-8b8a-49cc-ac94-af66be7bc2d9",
+      "name": "Format Email content"
+    },
+    {
+      "parameters": {
+        "sendTo": "chandinidailytalks@gmail.com",
+        "subject": "Everyday News 7am",
+        "message": "=<h1>News Articles</h1>\n{{ $json.allArticles }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "1a36888c-407b-4120-b838-1c451ed512a1",
+      "name": "Send Daily News Email",
+      "webhookId": "7c89d1c7-ca6b-4a48-b243-eaddb889e530",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f5tRCTZRkMOwRdJs",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Fetches the latest news headlines from NewsAPI.",
+        "height": 80,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -80
+      ],
+      "id": "2de7e6ed-bbf2-4494-9e74-7bea82f91cac",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Formats the top 10 headlines into a numbered email list.",
+        "height": 80,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "2743f81a-4b6c-4180-b5f6-f8d9f1efe596",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "\nSends the formatted news digest automatically.",
+        "height": 80
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -96
+      ],
+      "id": "e92cf1ec-a452-4a47-bae4-eda07ac39263",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Top News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Top News": {
+      "main": [
+        [
+          {
+            "node": "Split Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Articles": {
+      "main": [
+        [
+          {
+            "node": "Select Top 10 Headlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Top 10 Headlines": {
+      "main": [
+        [
+          {
+            "node": "Format Email content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email content": {
+      "main": [
+        [
+          {
+            "node": "Send Daily News Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1777fb14-4617-4cc7-b5cc-0282ec3d67bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eefca8323aeecf54208e914b35ee20a4bdea1ccc593a678743eb0782c4864405"
+  },
+  "nodeGroups": [],
+  "id": "zlCqbPhvLDrXc0yF",
+  "tags": []
+}
